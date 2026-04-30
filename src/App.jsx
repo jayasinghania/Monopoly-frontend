@@ -14,6 +14,10 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [finalScores, setFinalScores] = useState(null);
 
+  // Remember identity so we can re-join after a reconnect.
+  const [myName, setMyName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+
   useEffect(() => {
     const unsubs = [
       addListener('state', (msg) => {
@@ -27,8 +31,14 @@ export default function App() {
         setFinalScores(msg.scores);
         setScreen('finished');
       }),
-      addListener('roomCreated', () => setScreen('lobby')),
-      addListener('roomJoined', () => setScreen('lobby')),
+      addListener('roomCreated', (msg) => {
+        if (msg.code) setRoomCode(msg.code);
+        setScreen('lobby');
+      }),
+      addListener('roomJoined', (msg) => {
+        if (msg.code) setRoomCode(msg.code);
+        setScreen('lobby');
+      }),
       addListener('error', (msg) => {
         setError(msg.message);
         setTimeout(() => setError(''), 4000);
@@ -40,11 +50,22 @@ export default function App() {
     return () => unsubs.forEach((fn) => fn());
   }, [addListener, screen]);
 
+  // After a reconnect, re-identify with the server using the same name + code.
+  // The backend's joinRoom handler treats this as a rejoin if the game is in progress.
+  useEffect(() => {
+    if (status === 'connected' && myName && roomCode && screen !== 'landing') {
+      sendMessage({ type: 'joinRoom', name: myName, code: roomCode });
+    }
+  }, [status, myName, roomCode, screen, sendMessage]);
+
   const handleCreateRoom = useCallback((name) => {
+    setMyName(name);
     sendMessage({ type: 'createRoom', name });
   }, [sendMessage]);
 
   const handleJoinRoom = useCallback((name, code) => {
+    setMyName(name);
+    setRoomCode((code || '').toUpperCase().trim());
     sendMessage({ type: 'joinRoom', name, code });
   }, [sendMessage]);
 
