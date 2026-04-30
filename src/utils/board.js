@@ -1,6 +1,3 @@
-// Board layout — matches server BOARD exactly
-// Also includes display data for rendering
-
 export const GROUP_COLORS = {
   brown: { bg: '#8B4513', text: '#fff', light: '#a0522d' },
   lightBlue: { bg: '#87CEEB', text: '#1a1a2e', light: '#b0e0f0' },
@@ -14,65 +11,55 @@ export const GROUP_COLORS = {
 
 export const BOARD_SPACES = [
   { id: 0, name: 'GO', shortName: 'GO', type: 'go', icon: '→' },
-  { id: 1, name: 'Mediterranean Ave', shortName: 'Mediterranean', type: 'property', group: 'brown', price: 60 },
+  { id: 1, name: 'Mediterranean Ave', shortName: 'Mediterranean', type: 'property', group: 'brown', price: 60, houseCost: 50 },
   { id: 2, name: 'Community Chest', shortName: 'Community', type: 'community', icon: '📦' },
-  { id: 3, name: 'Baltic Avenue', shortName: 'Baltic', type: 'property', group: 'brown', price: 60 },
+  { id: 3, name: 'Baltic Avenue', shortName: 'Baltic', type: 'property', group: 'brown', price: 60, houseCost: 50 },
   { id: 4, name: 'Income Tax', shortName: 'Income Tax', type: 'tax', icon: '💰', amount: 200 },
   { id: 5, name: 'Reading Railroad', shortName: 'Reading RR', type: 'railroad', icon: '🚂', price: 200 },
-  { id: 6, name: 'Oriental Avenue', shortName: 'Oriental', type: 'property', group: 'lightBlue', price: 100 },
+  { id: 6, name: 'Oriental Avenue', shortName: 'Oriental', type: 'property', group: 'lightBlue', price: 100, houseCost: 50 },
   { id: 7, name: 'Chance', shortName: 'Chance', type: 'chance', icon: '❓' },
-  { id: 8, name: 'Vermont Avenue', shortName: 'Vermont', type: 'property', group: 'lightBlue', price: 100 },
-  { id: 9, name: 'Connecticut Ave', shortName: 'Connecticut', type: 'property', group: 'lightBlue', price: 120 },
+  { id: 8, name: 'Vermont Avenue', shortName: 'Vermont', type: 'property', group: 'lightBlue', price: 100, houseCost: 50 },
+  { id: 9, name: 'Connecticut Ave', shortName: 'Connecticut', type: 'property', group: 'lightBlue', price: 120, houseCost: 50 },
   { id: 10, name: 'Jail', shortName: 'JAIL', type: 'jail', icon: '🔒' },
-  { id: 11, name: 'St. Charles Place', shortName: 'St. Charles', type: 'property', group: 'pink', price: 140 },
+  { id: 11, name: 'St. Charles Place', shortName: 'St. Charles', type: 'property', group: 'pink', price: 140, houseCost: 100 },
   { id: 12, name: 'Electric Company', shortName: 'Electric Co', type: 'utility', icon: '💡', price: 150 },
-  { id: 13, name: 'States Avenue', shortName: 'States', type: 'property', group: 'pink', price: 140 },
-  { id: 14, name: 'Virginia Avenue', shortName: 'Virginia', type: 'property', group: 'pink', price: 160 },
+  { id: 13, name: 'States Avenue', shortName: 'States', type: 'property', group: 'pink', price: 140, houseCost: 100 },
+  { id: 14, name: 'Virginia Avenue', shortName: 'Virginia', type: 'property', group: 'pink', price: 160, houseCost: 100 },
   { id: 15, name: 'Pennsylvania RR', shortName: 'Penn. RR', type: 'railroad', icon: '🚂', price: 200 },
-  { id: 16, name: 'St. James Place', shortName: 'St. James', type: 'property', group: 'orange', price: 180 },
+  { id: 16, name: 'St. James Place', shortName: 'St. James', type: 'property', group: 'orange', price: 180, houseCost: 100 },
   { id: 17, name: 'Community Chest', shortName: 'Community', type: 'community', icon: '📦' },
-  { id: 18, name: 'Tennessee Ave', shortName: 'Tennessee', type: 'property', group: 'orange', price: 180 },
-  { id: 19, name: 'New York Avenue', shortName: 'New York', type: 'property', group: 'orange', price: 200 },
+  { id: 18, name: 'Tennessee Ave', shortName: 'Tennessee', type: 'property', group: 'orange', price: 180, houseCost: 100 },
+  { id: 19, name: 'New York Avenue', shortName: 'New York', type: 'property', group: 'orange', price: 200, houseCost: 100 },
   { id: 20, name: 'Free Parking', shortName: 'FREE', type: 'freeParking', icon: '🅿️' },
-  { id: 21, name: 'Kentucky Avenue', shortName: 'Kentucky', type: 'property', group: 'red', price: 220 },
+  { id: 21, name: 'Kentucky Avenue', shortName: 'Kentucky', type: 'property', group: 'red', price: 220, houseCost: 150 },
   { id: 22, name: 'Chance', shortName: 'Chance', type: 'chance', icon: '❓' },
-  { id: 23, name: 'Indiana Avenue', shortName: 'Indiana', type: 'property', group: 'red', price: 220 },
-  { id: 24, name: 'Illinois Avenue', shortName: 'Illinois', type: 'property', group: 'red', price: 240 },
+  { id: 23, name: 'Indiana Avenue', shortName: 'Indiana', type: 'property', group: 'red', price: 220, houseCost: 150 },
+  { id: 24, name: 'Illinois Avenue', shortName: 'Illinois', type: 'property', group: 'red', price: 240, houseCost: 150 },
   { id: 25, name: 'B. & O. Railroad', shortName: 'B&O RR', type: 'railroad', icon: '🚂', price: 200 },
-  { id: 26, name: 'Atlantic Avenue', shortName: 'Atlantic', type: 'property', group: 'yellow', price: 260 },
-  { id: 27, name: 'Ventnor Avenue', shortName: 'Ventnor', type: 'property', group: 'yellow', price: 260 },
+  { id: 26, name: 'Atlantic Avenue', shortName: 'Atlantic', type: 'property', group: 'yellow', price: 260, houseCost: 150 },
+  { id: 27, name: 'Ventnor Avenue', shortName: 'Ventnor', type: 'property', group: 'yellow', price: 260, houseCost: 150 },
   { id: 28, name: 'Water Works', shortName: 'Water Works', type: 'utility', icon: '🚰', price: 150 },
-  { id: 29, name: 'Marvin Gardens', shortName: 'Marvin Gdns', type: 'property', group: 'yellow', price: 280 },
+  { id: 29, name: 'Marvin Gardens', shortName: 'Marvin Gdns', type: 'property', group: 'yellow', price: 280, houseCost: 150 },
   { id: 30, name: 'Go to Jail', shortName: 'GO TO JAIL', type: 'goToJail', icon: '👮' },
-  { id: 31, name: 'Pacific Avenue', shortName: 'Pacific', type: 'property', group: 'green', price: 300 },
-  { id: 32, name: 'N. Carolina Ave', shortName: 'N. Carolina', type: 'property', group: 'green', price: 300 },
+  { id: 31, name: 'Pacific Avenue', shortName: 'Pacific', type: 'property', group: 'green', price: 300, houseCost: 200 },
+  { id: 32, name: 'N. Carolina Ave', shortName: 'N. Carolina', type: 'property', group: 'green', price: 300, houseCost: 200 },
   { id: 33, name: 'Community Chest', shortName: 'Community', type: 'community', icon: '📦' },
-  { id: 34, name: 'Pennsylvania Ave', shortName: 'Pennsylvania', type: 'property', group: 'green', price: 320 },
+  { id: 34, name: 'Pennsylvania Ave', shortName: 'Pennsylvania', type: 'property', group: 'green', price: 320, houseCost: 200 },
   { id: 35, name: 'Short Line', shortName: 'Short Line', type: 'railroad', icon: '🚂', price: 200 },
   { id: 36, name: 'Chance', shortName: 'Chance', type: 'chance', icon: '❓' },
-  { id: 37, name: 'Park Place', shortName: 'Park Place', type: 'property', group: 'blue', price: 350 },
+  { id: 37, name: 'Park Place', shortName: 'Park Place', type: 'property', group: 'blue', price: 350, houseCost: 200 },
   { id: 38, name: 'Luxury Tax', shortName: 'Luxury Tax', type: 'tax', icon: '💎', amount: 100 },
-  { id: 39, name: 'Boardwalk', shortName: 'Boardwalk', type: 'property', group: 'blue', price: 400 },
+  { id: 39, name: 'Boardwalk', shortName: 'Boardwalk', type: 'property', group: 'blue', price: 400, houseCost: 200 },
 ];
 
-// Board layout positions: id -> { row, col, side }
-// The board is an 11×11 grid with spaces around the edge
-// Bottom row: 0-9 (right to left)
-// Left column: 10-19 (bottom to top)
-// Top row: 20-29 (left to right)
-// Right column: 30-39 (top to bottom)
 export function getBoardPosition(id) {
   if (id >= 0 && id <= 10) {
-    // Bottom row: right to left → col = 10 - id, row = 10
     return { row: 10, col: 10 - id, side: 'bottom' };
   } else if (id >= 11 && id <= 19) {
-    // Left column: bottom to top → col = 0, row = 10 - (id - 10)
     return { row: 10 - (id - 10), col: 0, side: 'left' };
   } else if (id >= 20 && id <= 30) {
-    // Top row: left to right → col = id - 20, row = 0
     return { row: 0, col: id - 20, side: 'top' };
   } else {
-    // Right column: top to bottom → col = 10, row = id - 30
     return { row: id - 30, col: 10, side: 'right' };
   }
 }

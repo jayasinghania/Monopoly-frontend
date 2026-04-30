@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { TOKENS } from '../utils/tokens';
 import { BOARD_SPACES, GROUP_COLORS, getBoardPosition } from '../utils/board';
 import BoardSquare from './BoardSquare';
@@ -6,11 +6,14 @@ import DiceDisplay from './DiceDisplay';
 import PlayerPanel from './PlayerPanel';
 import GameLog from './GameLog';
 import CardModal from './CardModal';
+import PropertyManager from './PropertyManager';
+import { TradeProposer, TradeNotification } from './TradeDialog';
 
 const PLAYER_COLORS = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A', '#F4A261', '#9B5DE5'];
 
 export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
-  const [lastCard, setLastCard] = useState(null);
+  const [showPropertyManager, setShowPropertyManager] = useState(false);
+  const [showTradeDialog, setShowTradeDialog] = useState(false);
   const [diceAnimating, setDiceAnimating] = useState(false);
 
   if (!gameState) return null;
@@ -24,6 +27,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
   const canBuy = isMyTurn && me.pendingAction === 'buy';
 
   const currentSpace = BOARD_SPACES[me.position];
+  const myPropCount = Object.values(gameState.properties).filter((p) => p.owner === myIndex).length;
 
   const rollDice = () => {
     setDiceAnimating(true);
@@ -33,7 +37,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
 
   return (
     <div className="min-h-screen bg-main bg-felt-texture flex flex-col lg:flex-row">
-      {/* Left sidebar — player info */}
+      {/* Left sidebar — Players */}
       <div className="lg:w-64 xl:w-72 p-4 flex flex-col gap-3 lg:h-screen lg:overflow-y-auto">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-gold font-display text-lg font-bold">Players</span>
@@ -50,6 +54,40 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
             properties={gameState.properties}
           />
         ))}
+
+        {/* Quick action buttons */}
+        <div className="gold-line mt-2" />
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowPropertyManager(!showPropertyManager)}
+            className={`
+              flex-1 text-[10px] py-2 rounded border font-display tracking-wider uppercase transition-all
+              ${showPropertyManager
+                ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
+                : 'bg-white/[0.02] border-white/[0.06] text-white/30 hover:border-white/20'
+              }
+            `}
+          >
+            🏠 Props ({myPropCount})
+          </button>
+          <button
+            onClick={() => setShowTradeDialog(true)}
+            disabled={!!gameState.pendingTrade}
+            className="flex-1 text-[10px] py-2 rounded border bg-white/[0.02] border-white/[0.06] text-white/30 hover:border-white/20 font-display tracking-wider uppercase transition-all disabled:opacity-30"
+          >
+            🤝 Trade
+          </button>
+        </div>
+
+        {/* Property manager (collapsible) */}
+        {showPropertyManager && (
+          <PropertyManager
+            gameState={gameState}
+            myIndex={myIndex}
+            sendMessage={sendMessage}
+            onClose={() => setShowPropertyManager(false)}
+          />
+        )}
       </div>
 
       {/* Center — Board */}
@@ -109,10 +147,8 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
               }}
               className="flex flex-col items-center justify-center p-4 relative"
             >
-              {/* Dice */}
               <DiceDisplay dice={gameState.diceRoll} animating={diceAnimating} />
 
-              {/* Action buttons */}
               <div className="mt-4 flex flex-col items-center gap-2">
                 {/* Jail options */}
                 {isMyTurn && me.inJail && !me.hasRolled && (
@@ -185,7 +221,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
         </div>
       </div>
 
-      {/* Right sidebar — Game Log */}
+      {/* Right sidebar — Game Log + Balance */}
       <div className="lg:w-64 xl:w-72 p-4 lg:h-screen flex flex-col">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-gold font-display text-lg font-bold">Game Log</span>
@@ -193,12 +229,17 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
         </div>
         <GameLog logs={logs} />
 
-        {/* My money */}
         <div className="mt-3 card p-3">
           <p className="text-[10px] font-display tracking-[0.2em] uppercase text-amber-500/40">Your Balance</p>
           <p className="text-2xl font-display font-bold text-gold mt-1">
             ${me.money.toLocaleString()}
           </p>
+          {me.inJail && (
+            <p className="text-[10px] text-red-400 font-mono mt-1">🔒 In Jail (Turn {me.jailTurns}/3)</p>
+          )}
+          {me.hasGetOutOfJailCard && (
+            <p className="text-[10px] text-green-400 font-mono mt-0.5">🃏 Get Out of Jail Free</p>
+          )}
         </div>
       </div>
 
@@ -209,6 +250,23 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
           onDismiss={() => sendMessage({ type: 'dismissCard' })}
         />
       )}
+
+      {/* Trade dialog */}
+      {showTradeDialog && (
+        <TradeProposer
+          gameState={gameState}
+          myIndex={myIndex}
+          sendMessage={sendMessage}
+          onClose={() => setShowTradeDialog(false)}
+        />
+      )}
+
+      {/* Trade notification */}
+      <TradeNotification
+        gameState={gameState}
+        myIndex={myIndex}
+        sendMessage={sendMessage}
+      />
     </div>
   );
 }
