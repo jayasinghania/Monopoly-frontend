@@ -3,14 +3,16 @@ import { useWebSocket } from './hooks/useWebSocket';
 import LandingScreen from './components/LandingScreen';
 import LobbyScreen from './components/LobbyScreen';
 import GameScreen from './components/GameScreen';
+import GameOverScreen from './components/GameOverScreen';
 
 export default function App() {
   const { sendMessage, addListener, status } = useWebSocket();
-  const [screen, setScreen] = useState('landing'); // landing | lobby | game
+  const [screen, setScreen] = useState('landing'); // landing | lobby | game | finished
   const [gameState, setGameState] = useState(null);
   const [myIndex, setMyIndex] = useState(-1);
   const [error, setError] = useState('');
   const [logs, setLogs] = useState([]);
+  const [finalScores, setFinalScores] = useState(null);
 
   useEffect(() => {
     const unsubs = [
@@ -18,8 +20,12 @@ export default function App() {
         setGameState(msg.state);
         setMyIndex(msg.yourIndex);
         if (msg.state.state === 'lobby' && screen === 'landing') setScreen('lobby');
-        if (msg.state.state === 'playing') setScreen('game');
-        if (msg.state.state === 'finished') setScreen('game');
+        if (msg.state.state === 'playing' && screen !== 'game') setScreen('game');
+        if (msg.state.state === 'finished' && screen !== 'finished') setScreen('finished');
+      }),
+      addListener('gameOver', (msg) => {
+        setFinalScores(msg.scores);
+        setScreen('finished');
       }),
       addListener('roomCreated', () => setScreen('lobby')),
       addListener('roomJoined', () => setScreen('lobby')),
@@ -76,6 +82,14 @@ export default function App() {
           myIndex={myIndex}
           sendMessage={sendMessage}
           logs={logs}
+        />
+      )}
+
+      {screen === 'finished' && (
+        <GameOverScreen
+          gameState={gameState}
+          myIndex={myIndex}
+          scores={finalScores}
         />
       )}
     </div>

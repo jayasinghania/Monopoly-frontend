@@ -78,6 +78,16 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
             🤝 Trade
           </button>
         </div>
+        <button
+          onClick={() => {
+            if (window.confirm('Are you sure you want to forfeit? This cannot be undone.')) {
+              sendMessage({ type: 'declareBankruptcy' });
+            }
+          }}
+          className="w-full text-[9px] py-1.5 rounded border border-red-500/10 text-red-400/30 hover:text-red-400/60 hover:border-red-500/20 font-display tracking-wider uppercase transition-all mt-1"
+        >
+          🏳️ Forfeit
+        </button>
 
         {/* Property manager (collapsible) */}
         {showPropertyManager && (
