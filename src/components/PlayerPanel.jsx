@@ -1,7 +1,7 @@
 import { TOKENS } from '../utils/tokens';
 import { BOARD_SPACES, GROUP_COLORS } from '../utils/board';
 
-export default function PlayerPanel({ player, index, isCurrentTurn, isMe, color, properties }) {
+export default function PlayerPanel({ player, index, isCurrentTurn, isMe, color, properties, onViewProperties }) {
   // Gather this player's properties
   const ownedProps = Object.entries(properties)
     .filter(([_, p]) => p.owner === index)
@@ -13,6 +13,11 @@ export default function PlayerPanel({ player, index, isCurrentTurn, isMe, color,
     if (a.group && b.group && a.group !== b.group) return a.group.localeCompare(b.group);
     return a.id - b.id;
   });
+
+  // How many chips fit in the preview before we say "+N more"
+  const PREVIEW_LIMIT = 4;
+  const previewProps = ownedProps.slice(0, PREVIEW_LIMIT);
+  const overflow = ownedProps.length - previewProps.length;
 
   return (
     <div
@@ -69,19 +74,25 @@ export default function PlayerPanel({ player, index, isCurrentTurn, isMe, color,
         </div>
       </div>
 
-      {/* Owned properties — labeled chips so you can READ what you own */}
+      {/* Owned properties — preview chips + "View All" button to open the full modal */}
       {ownedProps.length > 0 && (
         <div className="mt-2.5">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] uppercase tracking-wider text-white/50 font-mono">
               Properties
+              <span className="text-white/70 font-semibold ml-1.5">{ownedProps.length}</span>
             </span>
-            <span className="text-[10px] text-white/60 font-mono font-semibold">
-              {ownedProps.length}
-            </span>
+            {onViewProperties && (
+              <button
+                onClick={() => onViewProperties(index)}
+                className="text-[10px] px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:border-amber-400/50 transition-colors font-display tracking-wider uppercase"
+              >
+                View All
+              </button>
+            )}
           </div>
           <div className="flex flex-wrap gap-1">
-            {ownedProps.map((p) => {
+            {previewProps.map((p) => {
               const gc = GROUP_COLORS[p.group];
               const swatchColor = gc?.bg || (p.type === 'railroad' ? '#3a3a3a' : p.type === 'utility' ? '#6b7280' : '#555');
               const label = p.shortName || p.name;
@@ -105,6 +116,16 @@ export default function PlayerPanel({ player, index, isCurrentTurn, isMe, color,
                 </span>
               );
             })}
+            {overflow > 0 && (
+              <button
+                onClick={() => onViewProperties?.(index)}
+                className="prop-chip text-amber-300/80 hover:text-amber-200 border-amber-500/20 hover:border-amber-400/40 cursor-pointer"
+                style={{ background: 'rgba(212,175,55,0.08)' }}
+                title="See all properties"
+              >
+                +{overflow} more
+              </button>
+            )}
           </div>
         </div>
       )}

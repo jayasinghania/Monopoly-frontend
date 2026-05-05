@@ -7,6 +7,7 @@ import PlayerPanel from './PlayerPanel';
 import GameLog from './GameLog';
 import CardModal from './CardModal';
 import PropertyManager from './PropertyManager';
+import PropertyDetailDialog from './PropertyDetailDialog';
 import { TradeProposer, TradeNotification } from './TradeDialog';
 
 const PLAYER_COLORS = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A', '#F4A261', '#9B5DE5'];
@@ -15,6 +16,8 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
   const [showPropertyManager, setShowPropertyManager] = useState(false);
   const [showTradeDialog, setShowTradeDialog] = useState(false);
   const [diceAnimating, setDiceAnimating] = useState(false);
+  // Index of the player whose holdings modal is open (null = closed).
+  const [viewingPlayerIdx, setViewingPlayerIdx] = useState(null);
 
   if (!gameState) return null;
 
@@ -52,6 +55,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
             isMe={i === myIndex}
             color={PLAYER_COLORS[i]}
             properties={gameState.properties}
+            onViewProperties={setViewingPlayerIdx}
           />
         ))}
 
@@ -280,6 +284,16 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
         myIndex={myIndex}
         sendMessage={sendMessage}
       />
+
+      {/* Property holdings — opened from any player panel's "View All" button */}
+      {viewingPlayerIdx != null && gameState.players[viewingPlayerIdx] && (
+        <PropertyDetailDialog
+          player={gameState.players[viewingPlayerIdx]}
+          playerIndex={viewingPlayerIdx}
+          properties={gameState.properties}
+          onClose={() => setViewingPlayerIdx(null)}
+        />
+      )}
     </div>
   );
 }
