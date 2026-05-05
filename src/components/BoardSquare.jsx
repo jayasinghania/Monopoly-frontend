@@ -1,11 +1,12 @@
 import { TOKENS } from '../utils/tokens';
 import { GROUP_COLORS } from '../utils/board';
 
-export default function BoardSquare({ space, pos, property, playersHere, ownerColor, myIndex }) {
+export default function BoardSquare({ space, pos, property, playersHere, ownerColor, ownerToken, myIndex }) {
   const isCorner = [0, 10, 20, 30].includes(space.id);
   const isProperty = space.type === 'property';
   const groupColor = isProperty ? GROUP_COLORS[space.group] : null;
   const ownedByMe = property && property.owner === myIndex;
+  const ownedByOther = property && property.owner != null && !ownedByMe;
 
   // Grid positioning
   const style = {
@@ -31,11 +32,11 @@ export default function BoardSquare({ space, pos, property, playersHere, ownerCo
       `}
       title={`${space.name}${space.price ? ` — $${space.price}` : ''}`}
     >
-      {/* Owner tint — stronger so ownership is visible at a glance */}
+      {/* Owner tint — strong enough to actually see */}
       {ownerColor && (
         <div
           className="absolute inset-0"
-          style={{ background: `${ownerColor}${ownedByMe ? '38' : '22'}` }}
+          style={{ background: `${ownerColor}${ownedByMe ? '60' : '40'}` }}
         />
       )}
 
@@ -62,24 +63,49 @@ export default function BoardSquare({ space, pos, property, playersHere, ownerCo
         />
       )}
 
-      {/* Owner indicator — bigger ribbon along the inner edge so you can SEE who owns what */}
+      {/* OWNERSHIP FRAME — solid colored border around the whole square.
+          This is the primary visual signal of "someone owns this". */}
       {ownerColor && !isCorner && (
         <div
-          className="absolute z-10"
+          className="absolute inset-0 z-20 pointer-events-none"
           style={{
-            background: `linear-gradient(${pos.side === 'left' ? '90deg' : pos.side === 'right' ? '270deg' : pos.side === 'top' ? '180deg' : '0deg'}, ${ownerColor}, transparent)`,
-            opacity: ownedByMe ? 0.75 : 0.55,
-            ...(pos.side === 'bottom' && { top: 6, left: 0, right: 0, height: 3 }),
-            ...(pos.side === 'top'    && { bottom: 6, left: 0, right: 0, height: 3 }),
-            ...(pos.side === 'left'   && { right: 6, top: 0, bottom: 0, width: 3 }),
-            ...(pos.side === 'right'  && { left: 6, top: 0, bottom: 0, width: 3 }),
+            border: ownedByMe ? `3px solid ${ownerColor}` : `2px solid ${ownerColor}`,
+            boxShadow: ownedByMe
+              ? `inset 0 0 12px ${ownerColor}aa, 0 0 8px ${ownerColor}66`
+              : `inset 0 0 6px ${ownerColor}66`,
           }}
         />
       )}
 
+      {/* OWNER BADGE — small colored chip in the corner showing the owner's token.
+          Tells you at a glance WHO owns this, not just THAT it's owned. */}
+      {ownerColor && !isCorner && ownerToken && (
+        <div
+          className="absolute z-30 flex items-center justify-center rounded-full font-bold"
+          style={{
+            background: ownerColor,
+            border: '1.5px solid rgba(255,255,255,0.9)',
+            boxShadow: `0 1px 4px rgba(0,0,0,0.5), 0 0 6px ${ownerColor}`,
+            width: 14,
+            height: 14,
+            fontSize: 9,
+            lineHeight: 1,
+            // Place opposite to where the player tokens render (which is bottom-right).
+            // We put the owner badge in the corner away from the color strip.
+            ...(pos.side === 'bottom' && { top: 9, left: 2 }),
+            ...(pos.side === 'top'    && { bottom: 9, left: 2 }),
+            ...(pos.side === 'left'   && { top: 2, right: 9 }),
+            ...(pos.side === 'right'  && { top: 2, left: 9 }),
+          }}
+          title={ownedByMe ? 'Owned by you' : 'Owned'}
+        >
+          {TOKENS[ownerToken]?.emoji || '●'}
+        </div>
+      )}
+
       {/* Mortgage overlay */}
       {property?.mortgaged && (
-        <div className="absolute inset-0 bg-black/55 z-20 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/55 z-40 flex items-center justify-center">
           <span className="text-[8px] text-red-300 font-mono font-bold rotate-[-30deg] tracking-wider">MORTGAGED</span>
         </div>
       )}

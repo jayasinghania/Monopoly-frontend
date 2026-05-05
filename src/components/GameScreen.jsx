@@ -132,6 +132,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
             {BOARD_SPACES.map((space) => {
               const pos = getBoardPosition(space.id);
               const prop = gameState.properties[space.id];
+              const owner = prop && prop.owner != null ? gameState.players[prop.owner] : null;
               const playersHere = gameState.players
                 .map((p, i) => ({ ...p, index: i, color: PLAYER_COLORS[i] }))
                 .filter((p) => p.position === space.id && !p.bankrupt);
@@ -144,6 +145,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
                   property={prop}
                   playersHere={playersHere}
                   ownerColor={prop ? PLAYER_COLORS[prop.owner] : null}
+                  ownerToken={owner?.token}
                   myIndex={myIndex}
                 />
               );

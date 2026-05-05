@@ -4,6 +4,7 @@ import LandingScreen from './components/LandingScreen';
 import LobbyScreen from './components/LobbyScreen';
 import GameScreen from './components/GameScreen';
 import GameOverScreen from './components/GameOverScreen';
+import Countdown from './components/Countdown';
 import { loadSession, saveSession, clearSession } from './utils/session';
 
 export default function App() {
@@ -29,13 +30,25 @@ export default function App() {
   // so we can interpret error responses (e.g. "Room not found") correctly.
   const restoringRef = useRef(Boolean(initialSession));
 
+  // Countdown shown when transitioning from lobby -> game (only on first start,
+  // not on reload/rejoin into an in-progress game).
+  const [showCountdown, setShowCountdown] = useState(false);
+
   useEffect(() => {
     const unsubs = [
       addListener('state', (msg) => {
         setGameState(msg.state);
         setMyIndex(msg.yourIndex);
         if (msg.state.state === 'lobby' && screen !== 'lobby') setScreen('lobby');
-        if (msg.state.state === 'playing' && screen !== 'game') setScreen('game');
+        if (msg.state.state === 'playing' && screen !== 'game') {
+          // Only show the 3-2-1 countdown if we're transitioning out of the
+          // lobby (game just started). On a reload/rejoin into a game already
+          // in progress, `screen` will be 'restoring' or 'landing', so we skip.
+          if (screen === 'lobby') {
+            setShowCountdown(true);
+          }
+          setScreen('game');
+        }
         if (msg.state.state === 'finished' && screen !== 'finished') setScreen('finished');
       }),
       addListener('gameOver', (msg) => {
@@ -131,6 +144,7 @@ export default function App() {
     setMyIndex(-1);
     setFinalScores(null);
     setLogs([]);
+    setShowCountdown(false);
     setScreen('landing');
   }, []);
 
@@ -193,6 +207,12 @@ export default function App() {
           logs={logs}
           onLeave={handleLeaveGame}
         />
+      )}
+
+      {/* Countdown sits on top of the board for ~3s when the game starts.
+          Board is already mounted underneath so it's visible the moment "GO" fades. */}
+      {showCountdown && (
+        <Countdown onComplete={() => setShowCountdown(false)} />
       )}
 
       {screen === 'finished' && (
