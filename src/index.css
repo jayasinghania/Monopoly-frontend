@@ -174,6 +174,53 @@
       0 0 0 1px rgba(197, 165, 90, 0.05),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
+
+  /* ============================================
+     PLAYER PANEL — own card stands out
+     ============================================ */
+  .card-me {
+    background: linear-gradient(170deg, rgba(40, 28, 60, 0.85) 0%, rgba(20, 14, 35, 0.95) 100%);
+    border: 1px solid rgba(180, 140, 255, 0.25);
+    box-shadow:
+      0 4px 30px rgba(120, 80, 220, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* ============================================
+     OWNED-PROPERTY CHIP — used in PlayerPanel
+     ============================================ */
+  .prop-chip {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm font-body font-medium;
+    font-size: 10px;
+    line-height: 1.2;
+    color: rgba(255,255,255,0.92);
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.06);
+    white-space: nowrap;
+  }
+  .prop-chip-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
+  }
+  .prop-chip-mortgaged {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+}
+
+/* ============================================
+   "YOU" TOKEN HALO — pulses on the board
+   ============================================ */
+@keyframes meTokenPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6), 0 0 8px var(--me-color, #fff); }
+  50%      { box-shadow: 0 0 0 3px rgba(255,255,255,0), 0 0 12px var(--me-color, #fff); }
+}
+.token-me {
+  animation: meTokenPulse 2s ease-in-out infinite;
+  z-index: 40 !important;
 }
 
 /* ============================================

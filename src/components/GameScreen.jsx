@@ -144,6 +144,7 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
                   property={prop}
                   playersHere={playersHere}
                   ownerColor={prop ? PLAYER_COLORS[prop.owner] : null}
+                  myIndex={myIndex}
                 />
               );
             })}
