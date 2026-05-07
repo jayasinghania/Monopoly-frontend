@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BOARD_SPACES, GROUP_COLORS } from '../utils/board';
 import { TOKENS } from '../utils/tokens';
 
-const PLAYER_COLORS = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A', '#F4A261', '#9B5DE5'];
+const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#A855F7', '#EC4899', '#06B6D4'];
 
 // ============================================================
 // TRADE PROPOSAL FORM

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { TOKENS } from '../utils/tokens';
 import { BOARD_SPACES, GROUP_COLORS } from '../utils/board';
 
-const PLAYER_COLORS = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A', '#F4A261', '#9B5DE5'];
+const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#A855F7', '#EC4899', '#06B6D4'];
 
 const RANK_LABELS = ['🏆', '🥈', '🥉', '4th', '5th', '6th'];
 const RANK_STYLES = [

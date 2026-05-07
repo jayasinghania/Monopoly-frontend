@@ -14,10 +14,13 @@ const GROUP_DEFINITIONS = (() => {
   return groups;
 })();
 
-const PLAYER_COLORS = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A', '#F4A261', '#9B5DE5'];
+const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#A855F7', '#EC4899', '#06B6D4'];
 
-export default function PropertyDetailDialog({ player, playerIndex, properties, onClose }) {
+export default function PropertyDetailDialog({ player, playerIndex, properties, myIndex, sendMessage, onClose }) {
   const playerColor = PLAYER_COLORS[playerIndex];
+
+  // Are we looking at our OWN holdings? Only then are action buttons shown.
+  const isOwn = myIndex === playerIndex;
 
   // Owned by this player, joined with board info
   const owned = Object.entries(properties)
@@ -34,6 +37,14 @@ export default function PropertyDetailDialog({ player, playerIndex, properties, 
   const railroads = owned.filter((p) => p.type === 'railroad');
   const utilities = owned.filter((p) => p.type === 'utility');
 
+  // Which color groups does this player have a full monopoly on?
+  // Only properties in a complete monopoly can have houses built on them.
+  const completedGroups = new Set(
+    Object.keys(byGroup).filter(
+      (g) => byGroup[g].length === GROUP_DEFINITIONS[g]?.length
+    )
+  );
+
   // Totals
   const totalMortgageValue = owned.reduce((sum, p) => {
     if (p.mortgaged) return sum;
@@ -42,9 +53,7 @@ export default function PropertyDetailDialog({ player, playerIndex, properties, 
   const houseCount = owned.reduce((sum, p) => sum + (p.houses === 5 ? 0 : p.houses || 0), 0);
   const hotelCount = owned.filter((p) => p.houses === 5).length;
   const mortgagedCount = owned.filter((p) => p.mortgaged).length;
-  const monopolyCount = Object.keys(byGroup).filter(
-    (g) => byGroup[g].length === GROUP_DEFINITIONS[g]?.length
-  ).length;
+  const monopolyCount = completedGroups.size;
 
   return (
     <div
@@ -69,13 +78,15 @@ export default function PropertyDetailDialog({ player, playerIndex, properties, 
             </div>
             <div>
               <h3 className="font-display text-lg text-white leading-tight">
-                {player.name}
-                <span className="text-sm text-white/40 font-body font-normal ml-2">
-                  · Holdings
-                </span>
+                {isOwn ? 'Your Holdings' : `${player.name}'s Holdings`}
               </h3>
               <p className="font-display text-sm font-bold tracking-tight" style={{ color: playerColor }}>
                 ${player.money.toLocaleString()}
+                {!isOwn && (
+                  <span className="text-xs text-white/40 font-body font-normal ml-2">
+                    (view only)
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -133,7 +144,14 @@ export default function PropertyDetailDialog({ player, playerIndex, properties, 
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {props.map((p) => (
-                        <PropertyCard key={p.id} property={p} groupColor={gc} />
+                        <PropertyCard
+                          key={p.id}
+                          property={p}
+                          groupColor={gc}
+                          actionable={isOwn}
+                          hasMonopoly={isMonopoly}
+                          sendMessage={sendMessage}
+                        />
                       ))}
                     </div>
                   </div>
@@ -152,7 +170,13 @@ export default function PropertyDetailDialog({ player, playerIndex, properties, 
             </SectionLabel>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {railroads.map((p) => (
-                <PropertyCard key={p.id} property={p} icon="🚂" />
+                <PropertyCard
+                  key={p.id}
+                  property={p}
+                  icon="🚂"
+                  actionable={isOwn}
+                  sendMessage={sendMessage}
+                />
               ))}
             </div>
           </div>
@@ -167,7 +191,13 @@ export default function PropertyDetailDialog({ player, playerIndex, properties, 
             </SectionLabel>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {utilities.map((p) => (
-                <PropertyCard key={p.id} property={p} icon="💡" />
+                <PropertyCard
+                  key={p.id}
+                  property={p}
+                  icon="💡"
+                  actionable={isOwn}
+                  sendMessage={sendMessage}
+                />
               ))}
             </div>
           </div>
@@ -214,15 +244,29 @@ function SectionLabel({ children }) {
   );
 }
 
-function PropertyCard({ property, groupColor, icon }) {
+function PropertyCard({ property, groupColor, icon, actionable, hasMonopoly, sendMessage }) {
   const swatchColor = groupColor?.bg || (icon === '🚂' ? '#3a3a3a' : icon === '💡' ? '#6b7280' : '#555');
   const mortgageValue = Math.floor((property.price || 0) / 2);
+  const unmortgageCost = Math.floor(mortgageValue * 1.1);
+  const houseCost = property.houseCost || BOARD_SPACES[property.id]?.houseCost || 0;
+  const sellHouseRefund = Math.floor(houseCost / 2);
+  const isProperty = property.type === 'property';
+
+  // Which actions are available right now for this property?
+  // (Mirrors the rules enforced server-side.)
+  const canBuyHouse =
+    actionable && isProperty && hasMonopoly && !property.mortgaged && property.houses < 5;
+  const canSellHouse = actionable && property.houses > 0;
+  const canMortgage = actionable && !property.mortgaged && property.houses === 0;
+  const canUnmortgage = actionable && property.mortgaged;
+
+  const showActions = canBuyHouse || canSellHouse || canMortgage || canUnmortgage;
 
   return (
     <div
       className={`relative rounded-md p-2.5 border ${
         property.mortgaged
-          ? 'bg-red-950/20 border-red-500/20 opacity-70'
+          ? 'bg-red-950/20 border-red-500/20'
           : 'bg-white/[0.03] border-white/[0.08]'
       }`}
     >
@@ -270,12 +314,56 @@ function PropertyCard({ property, groupColor, icon }) {
             title="Hotel"
           />
         )}
-        {property.mortgaged && (
-          <div className="text-[10px] font-mono text-red-300/70 flex-shrink-0">
-            +${mortgageValue}
-          </div>
-        )}
       </div>
+
+      {/* Action buttons — only rendered for properties YOU own */}
+      {showActions && (
+        <div className="flex flex-wrap gap-1 mt-2 ml-2">
+          {canBuyHouse && (
+            <button
+              onClick={() => sendMessage?.({ type: 'buyHouse', propertyId: property.id })}
+              className="text-[10px] font-mono px-2 py-1 rounded border border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/20 hover:border-green-400/50 transition-colors"
+              title={`Build a ${property.houses === 4 ? 'hotel' : 'house'} (replaces 4 houses with hotel)`}
+            >
+              + 🏠 ${houseCost}
+            </button>
+          )}
+          {canSellHouse && (
+            <button
+              onClick={() => sendMessage?.({ type: 'sellHouse', propertyId: property.id })}
+              className="text-[10px] font-mono px-2 py-1 rounded border border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 hover:border-orange-400/50 transition-colors"
+              title="Sell back for half the build cost"
+            >
+              − 🏠 +${sellHouseRefund}
+            </button>
+          )}
+          {canMortgage && (
+            <button
+              onClick={() => sendMessage?.({ type: 'mortgage', propertyId: property.id })}
+              className="text-[10px] font-mono px-2 py-1 rounded border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 hover:border-red-400/50 transition-colors"
+              title="Lift cash by mortgaging — no rent collected while mortgaged"
+            >
+              Mortgage +${mortgageValue}
+            </button>
+          )}
+          {canUnmortgage && (
+            <button
+              onClick={() => sendMessage?.({ type: 'unmortgage', propertyId: property.id })}
+              className="text-[10px] font-mono px-2 py-1 rounded border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 hover:border-blue-400/50 transition-colors"
+              title="Pay back the mortgage plus 10% interest"
+            >
+              Unmortgage −${unmortgageCost}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Hint when you own the property but can't build because the color set isn't complete */}
+      {actionable && isProperty && !hasMonopoly && !property.mortgaged && property.houses === 0 && (
+        <p className="text-[9px] text-white/25 font-mono mt-1.5 ml-2 italic">
+          Complete the color set to build houses
+        </p>
+      )}
     </div>
   );
 }

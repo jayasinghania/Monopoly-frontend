@@ -6,14 +6,12 @@ import DiceDisplay from './DiceDisplay';
 import PlayerPanel from './PlayerPanel';
 import GameLog from './GameLog';
 import CardModal from './CardModal';
-import PropertyManager from './PropertyManager';
 import PropertyDetailDialog from './PropertyDetailDialog';
 import { TradeProposer, TradeNotification } from './TradeDialog';
 
-const PLAYER_COLORS = ['#E63946', '#457B9D', '#2A9D8F', '#E9C46A', '#F4A261', '#9B5DE5'];
+const PLAYER_COLORS = ['#EF4444', '#3B82F6', '#10B981', '#A855F7', '#EC4899', '#06B6D4'];
 
 export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
-  const [showPropertyManager, setShowPropertyManager] = useState(false);
   const [showTradeDialog, setShowTradeDialog] = useState(false);
   const [diceAnimating, setDiceAnimating] = useState(false);
   // Index of the player whose holdings modal is open (null = closed).
@@ -63,16 +61,10 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
         <div className="gold-line mt-2" />
         <div className="flex gap-2">
           <button
-            onClick={() => setShowPropertyManager(!showPropertyManager)}
-            className={`
-              flex-1 text-[10px] py-2 rounded border font-display tracking-wider uppercase transition-all
-              ${showPropertyManager
-                ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                : 'bg-white/[0.02] border-white/[0.06] text-white/30 hover:border-white/20'
-              }
-            `}
+            onClick={() => setViewingPlayerIdx(myIndex)}
+            className="flex-1 text-[10px] py-2 rounded border bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 hover:border-amber-400/50 font-display tracking-wider uppercase transition-all"
           >
-            🏠 Props ({myPropCount})
+            🏠 Manage ({myPropCount})
           </button>
           <button
             onClick={() => setShowTradeDialog(true)}
@@ -92,16 +84,6 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
         >
           🏳️ Forfeit
         </button>
-
-        {/* Property manager (collapsible) */}
-        {showPropertyManager && (
-          <PropertyManager
-            gameState={gameState}
-            myIndex={myIndex}
-            sendMessage={sendMessage}
-            onClose={() => setShowPropertyManager(false)}
-          />
-        )}
       </div>
 
       {/* Center — Board */}
@@ -136,7 +118,6 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
             {BOARD_SPACES.map((space) => {
               const pos = getBoardPosition(space.id);
               const prop = gameState.properties[space.id];
-              const owner = prop && prop.owner != null ? gameState.players[prop.owner] : null;
               const playersHere = gameState.players
                 .map((p, i) => ({ ...p, index: i, color: PLAYER_COLORS[i] }))
                 .filter((p) => p.position === space.id && !p.bankrupt);
@@ -149,7 +130,6 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
                   property={prop}
                   playersHere={playersHere}
                   ownerColor={prop ? PLAYER_COLORS[prop.owner] : null}
-                  ownerToken={owner?.token}
                   myIndex={myIndex}
                 />
               );
@@ -285,12 +265,14 @@ export default function GameScreen({ gameState, myIndex, sendMessage, logs }) {
         sendMessage={sendMessage}
       />
 
-      {/* Property holdings — opened from any player panel's "View All" button */}
+      {/* Property holdings — opened from any player panel's "View All" button or the Manage button */}
       {viewingPlayerIdx != null && gameState.players[viewingPlayerIdx] && (
         <PropertyDetailDialog
           player={gameState.players[viewingPlayerIdx]}
           playerIndex={viewingPlayerIdx}
           properties={gameState.properties}
+          myIndex={myIndex}
+          sendMessage={sendMessage}
           onClose={() => setViewingPlayerIdx(null)}
         />
       )}

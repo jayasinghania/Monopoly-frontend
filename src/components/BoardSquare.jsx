@@ -1,12 +1,11 @@
 import { TOKENS } from '../utils/tokens';
 import { GROUP_COLORS } from '../utils/board';
 
-export default function BoardSquare({ space, pos, property, playersHere, ownerColor, ownerToken, myIndex }) {
+export default function BoardSquare({ space, pos, property, playersHere, ownerColor, myIndex }) {
   const isCorner = [0, 10, 20, 30].includes(space.id);
   const isProperty = space.type === 'property';
   const groupColor = isProperty ? GROUP_COLORS[space.group] : null;
   const ownedByMe = property && property.owner === myIndex;
-  const ownedByOther = property && property.owner != null && !ownedByMe;
 
   // Grid positioning
   const style = {
@@ -64,7 +63,7 @@ export default function BoardSquare({ space, pos, property, playersHere, ownerCo
       )}
 
       {/* OWNERSHIP FRAME — solid colored border around the whole square.
-          This is the primary visual signal of "someone owns this". */}
+          With distinct player colors, the frame alone tells you who owns it. */}
       {ownerColor && !isCorner && (
         <div
           className="absolute inset-0 z-20 pointer-events-none"
@@ -75,32 +74,6 @@ export default function BoardSquare({ space, pos, property, playersHere, ownerCo
               : `inset 0 0 6px ${ownerColor}66`,
           }}
         />
-      )}
-
-      {/* OWNER BADGE — small colored chip in the corner showing the owner's token.
-          Tells you at a glance WHO owns this, not just THAT it's owned. */}
-      {ownerColor && !isCorner && ownerToken && (
-        <div
-          className="absolute z-30 flex items-center justify-center rounded-full font-bold"
-          style={{
-            background: ownerColor,
-            border: '1.5px solid rgba(255,255,255,0.9)',
-            boxShadow: `0 1px 4px rgba(0,0,0,0.5), 0 0 6px ${ownerColor}`,
-            width: 14,
-            height: 14,
-            fontSize: 9,
-            lineHeight: 1,
-            // Place opposite to where the player tokens render (which is bottom-right).
-            // We put the owner badge in the corner away from the color strip.
-            ...(pos.side === 'bottom' && { top: 9, left: 2 }),
-            ...(pos.side === 'top'    && { bottom: 9, left: 2 }),
-            ...(pos.side === 'left'   && { top: 2, right: 9 }),
-            ...(pos.side === 'right'  && { top: 2, left: 9 }),
-          }}
-          title={ownedByMe ? 'Owned by you' : 'Owned'}
-        >
-          {TOKENS[ownerToken]?.emoji || '●'}
-        </div>
       )}
 
       {/* Mortgage overlay */}
@@ -156,20 +129,20 @@ export default function BoardSquare({ space, pos, property, playersHere, ownerCo
         )}
       </div>
 
-      {/* Player tokens — yours is bigger and gets a pulsing halo */}
+      {/* Player tokens — all the same size now. Yours has a white border and pulsing halo. */}
       {playersHere.length > 0 && (
         <div className="absolute z-30 bottom-0.5 right-0.5 flex flex-wrap gap-0.5 justify-end max-w-full">
-          {/* Render "me" last so it draws on top */}
+          {/* Render "me" last so it draws on top of any overlap */}
           {[...playersHere].sort((a, b) => (a.index === myIndex ? 1 : 0) - (b.index === myIndex ? 1 : 0)).map((p) => {
             const isMe = p.index === myIndex;
             return (
               <div
                 key={p.index}
-                className={`rounded-full flex items-center justify-center border-2 ${isMe ? 'token-me w-6 h-6 text-sm' : 'w-4 h-4 text-[9px]'}`}
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-sm border-2 ${isMe ? 'token-me' : ''}`}
                 style={{
-                  background: `${p.color}${isMe ? '60' : '35'}`,
-                  borderColor: isMe ? '#fff' : `${p.color}cc`,
-                  boxShadow: isMe ? undefined : `0 0 4px ${p.color}80`,
+                  background: `${p.color}55`,
+                  borderColor: isMe ? '#fff' : `${p.color}ee`,
+                  boxShadow: isMe ? undefined : `0 0 6px ${p.color}99`,
                   '--me-color': p.color,
                 }}
                 title={isMe ? `${p.name} (you)` : p.name}

@@ -9,10 +9,10 @@ export const TOKENS = {
 };
 
 export const PLAYER_COLORS = [
-  '#E63946', // red
-  '#457B9D', // blue
-  '#2A9D8F', // teal
-  '#E9C46A', // gold
-  '#F4A261', // orange
-  '#7B2D8B', // purple
+  '#EF4444', // red
+  '#3B82F6', // blue
+  '#10B981', // emerald
+  '#A855F7', // violet
+  '#EC4899', // magenta
+  '#06B6D4', // cyan
 ];
